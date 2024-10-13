@@ -1,3 +1,5 @@
 # ImageDuplicityFinder
 Find the duplicated images in the given directory based on the content of the image regardless of size and format.
 this snippet simply gets the Directory from the User and tries to hash each image file and then compare these images based on their hash value.
+The program goes beyond traditional cryptographic hashes like SHA or MD5. It employs a Perceptual Hash based on the Average Hash algorithm, which computes a hash by comparing each pixel's color value to the mean. This approach ensures the resulting hash remains consistent even if the image is scaled, its aspect ratio altered, brightness adjusted, or its size and format changed. The hash solely depends on the image's content.
+To compare images, the program calculates the Hamming distance between their hashes. A distance of zero suggests nearly identical images (or variations of the same image). A distance of 5 indicates minor differences, but the images are likely similar. Distances of 10 or more typically signify distinctly different images.
