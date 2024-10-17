@@ -1,40 +1,62 @@
-use image_hasher::{HashAlg, HasherConfig};
-use std::collections::HashMap;
+use image::imageops::resize;
+use image_compare::rgba_hybrid_compare;
 use std::io;
 use walkdir::WalkDir;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut folder_path = String::new();
+    let mut similarity_input = String::new();
+
+    println!("Enter the folder path:");
     io::stdin()
         .read_line(&mut folder_path)
         .expect("Failed to read line");
-    folder_path = folder_path.trim().to_string();
-    let mut hash_map: HashMap<String, Vec<std::path::PathBuf>> = HashMap::new();
+
+    println!("Enter the similarity threshold (as a floating point number):");
+    io::stdin()
+        .read_line(&mut similarity_input)
+        .expect("Failed to read line");
+
+    let folder_path = folder_path.trim();
+    let similarity_threshold: f64 = similarity_input
+        .trim()
+        .parse()
+        .expect("Please enter a valid floating point number");
+
+    let mut images = vec![];
 
     for entry in WalkDir::new(folder_path).into_iter().filter_map(Result::ok) {
         let path = entry.path();
         if path.is_file() {
             if let Ok(img) = image::open(path) {
-                let hash = hash_image(&img);
-                hash_map.entry(hash).or_default().push(path.to_path_buf());
+                images.push((path.to_path_buf(), img.into_rgba8()));
             }
         }
     }
 
-    for (hash, paths) in hash_map {
-        if paths.len() > 1 {
-            println!("Duplicate images found:");
-            for path in paths {
-                println!("{:?}", path);
+    for i in 0..images.len() {
+        for j in (i + 1)..images.len() {
+            let (ref path_one, ref image_one) = images[i];
+            let (ref path_two, ref image_two) = images[j];
+
+            let resized_image_two = resize(
+                image_two,
+                image_one.width(),
+                image_one.height(),
+                image::imageops::FilterType::Nearest,
+            );
+            if let Ok(result) = rgba_hybrid_compare(image_one, &resized_image_two) {
+                if result.score > similarity_threshold {
+                    println!(
+                        "Images {:?} and {:?} are {:.2}% similar",
+                        path_one,
+                        path_two,
+                        result.score * 100.0
+                    );
+                }
             }
         }
     }
 
     Ok(())
-}
-
-fn hash_image(image: &image::DynamicImage) -> String {
-    let hasher = HasherConfig::new().to_hasher();
-    let hash = hasher.hash_image(image);
-    hash.to_base64()
 }
