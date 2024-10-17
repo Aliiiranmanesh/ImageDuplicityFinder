@@ -1,6 +1,5 @@
 ### ImageDuplicityFinder
-Find similar images in the given directory based on the content of the image regardless of size and format.
-this code depends on "https://github.com/ChrisRega/image-compare" this dependency which its hybrid comparison is used.
+this tool is designed to identify similar images within a specified directory, regardless of their size or format. The comparison is based on image content, utilizing advanced algorithms for accurate results.
 #the similarity is calculated by :
 - Splitting the image to YUV colorspace according to T.871
 - Processing the Y channel with MSSIM
@@ -22,3 +21,4 @@ this code depends on "https://github.com/ChrisRega/image-compare" this dependenc
     - RGBA: Same as RGB but alpha contains the inverse of the alpha-diffs. If something is heavily translucent, the
       alpha was so different, that differentiating between color and structure difference would be difficult. Also,
       minimum alpha is clamped at 0.1, so you can still see all changes.
+Library used "*https://github.com/ChrisRega/image-compare*"
