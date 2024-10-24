@@ -1,5 +1,6 @@
 use image::imageops::resize;
 use image_compare::rgba_hybrid_compare;
+use rayon::prelude::*;
 use std::io;
 use walkdir::WalkDir;
 
@@ -12,16 +13,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .read_line(&mut folder_path)
         .expect("Failed to read line");
 
-    println!("Enter the similarity threshold (as a floating point number):");
+    println!("Enter the similarity threshold (as a percentage):");
     io::stdin()
         .read_line(&mut similarity_input)
         .expect("Failed to read line");
 
     let folder_path = folder_path.trim();
-    let similarity_threshold: f64 = similarity_input
+    let mut similarity_threshold: f64 = similarity_input
         .trim()
         .parse()
         .expect("Please enter a valid floating point number");
+    similarity_threshold /= 100.0;
 
     let mut images = vec![];
 
@@ -34,29 +36,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    for i in 0..images.len() {
-        for j in (i + 1)..images.len() {
-            let (ref path_one, ref image_one) = images[i];
-            let (ref path_two, ref image_two) = images[j];
-
-            let resized_image_two = resize(
-                image_two,
-                image_one.width(),
-                image_one.height(),
-                image::imageops::FilterType::Nearest,
-            );
-            if let Ok(result) = rgba_hybrid_compare(image_one, &resized_image_two) {
-                if result.score > similarity_threshold {
-                    println!(
-                        "Images {:?} and {:?} are {:.2}% similar",
-                        path_one,
-                        path_two,
-                        result.score * 100.0
-                    );
+    images
+        .par_iter()
+        .enumerate()
+        .for_each(|(i, (path_one, image_one))| {
+            images.iter().skip(i + 1).for_each(|(path_two, image_two)| {
+                let resized_image_two = resize(
+                    image_two,
+                    image_one.width(),
+                    image_one.height(),
+                    image::imageops::FilterType::Nearest,
+                );
+                if let Ok(result) = rgba_hybrid_compare(image_one, &resized_image_two) {
+                    if result.score > similarity_threshold {
+                        println!(
+                            "Images {:?} and {:?} are {:.2}% similar",
+                            path_one,
+                            path_two,
+                            result.score * 100.0
+                        );
+                    }
                 }
-            }
-        }
-    }
+            });
+        });
 
     Ok(())
 }
