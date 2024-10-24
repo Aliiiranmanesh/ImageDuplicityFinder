@@ -23,4 +23,4 @@ this tool is designed to identify similar images within a specified directory co
       minimum alpha is clamped at 0.1, so you can still see all changes.
 Library used "*https://github.com/ChrisRega/image-compare*"
 
-## For concurrency, the Rayon crate is used, which allows the program to easily implement concurrency based on CPU cores.
+For concurrency, the Rayon crate is used, which allows the program to easily implement concurrency based on CPU cores.
