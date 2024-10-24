@@ -1,5 +1,5 @@
 ### ImageDuplicityFinder
-this tool is designed to identify similar images within a specified directory, regardless of their size or format. The comparison is based on image content, utilizing advanced algorithms for accurate results.
+this tool is designed to identify similar images within a specified directory concurrently, regardless of their size or format. The comparison is based on image content, utilizing advanced algorithms for accurate results.
 #the similarity is calculated by :
 - Splitting the image to YUV colorspace according to T.871
 - Processing the Y channel with MSSIM
@@ -22,3 +22,4 @@ this tool is designed to identify similar images within a specified directory, r
       alpha was so different, that differentiating between color and structure difference would be difficult. Also,
       minimum alpha is clamped at 0.1, so you can still see all changes.
 Library used "*https://github.com/ChrisRega/image-compare*"
+#For concurrency, the Rayon crate is used, which allows the program to easily implement concurrency based on CPU cores.
